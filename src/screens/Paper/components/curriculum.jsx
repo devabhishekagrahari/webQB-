@@ -1,9 +1,10 @@
 // src/components/CurriculumEditor.jsx
 
-import { useCurriculum } from "../../../context/curriculumContext";
+import { usePaperData } from "../../../context/appProvider";
+
 
 export default function CurriculumEditor() {
-  const { curriculum, setCurriculum } = useCurriculum();
+  const { curriculum, setCurriculum } = usePaperData();
 
   const setDeepValue = (path, value) => {
     const updated = structuredClone(curriculum); // Safe deep clone

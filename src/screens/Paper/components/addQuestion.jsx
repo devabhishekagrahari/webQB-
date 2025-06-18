@@ -1,13 +1,29 @@
 // src/components/AddQuestionForm.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { v4 as uuidv4 } from "uuid";
-import { useQuestion } from "../../../context/questionContext";
+
+import { usePaperData } from "../../../context/appProvider";
+import {db} from "./firebaseConfig.jsx";
+import { doc, getDoc } from "firebase/firestore";
+import { saveQuestionToFirestore } from "./firebaseFunctions.jsx";
 
 export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
-  const { addQuestion } = useQuestion();
 
-  const [formData, setFormData] = useState({
+  const docref = doc(db, "users", "dB7eL4fZRgir4b7wR3jA");
+  const getData = async ()=>{
+    const docsnap=await getDoc(docref);
+
+    console.log(docsnap.data());
+  }
+
+  useEffect(() =>{
+    getData();
+  },[]);
+
+  const { questions , setQuestions  } = usePaperData();
+
+  const [formData , setFormData]=useState({
     question: "",
     options: [""],
     imageUrl: "",
@@ -36,27 +52,53 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
     setFormData((f) => ({ ...f, options: [...f.options, ""] }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newQuestion = {
-      id: uuidv4(),
-      question: formData.question,
-      options: formData.options.filter((o) => o.trim() !== ""),
-      imageUrl: formData.imageUrl || null,
-      answer: formData.answer,
-      posMarks: Number(formData.posMarks),
-      negMarks: formData.negMarks ? Number(formData.negMarks) : 0,
-      unit: formData.unit,
-      chapter: formData.chapter,
-      subChapter: formData.subChapter || null,
-      subSubChapter: formData.subSubChapter || null,
-      typeOfQuestion: formData.typeOfQuestion,
-      createdBy,
-      timestamp: new Date().toISOString(),
-    };
+  //await saveQuestionToFirestore(newQuestion);
 
-    addQuestion(newQuestion);
+
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const newQuestion = {
+    id: uuidv4(),
+    questionText: formData.question,
+    options: formData.options.filter((o) => o.trim() !== ""),
+    imageUrl: formData.imageUrl || null,
+    correctAnswer: formData.answer,
+    posMarks: Number(formData.posMarks),
+    negMarks: formData.negMarks ? Number(formData.negMarks) : 0,
+    unit: formData.unit,
+    chapter: formData.chapter,
+    subChapter: formData.subChapter || null,
+    subSubChapter: formData.subSubChapter || null,
+    type: formData.typeOfQuestion,
+    createdBy: createdBy || "admin@example.com",
+    timestamp: new Date().toISOString(),
+  };
+  console.log("📝 New question data:", newQuestion);
+
+  try {
+    console.log("📤 Posting new question to backend...");
+
+    const response = await fetch('https://qbvault1.onrender.com/api/questions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newQuestion),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    console.log("✅ Question added to backend:", result.question);
+    setQuestions((prev) => [...prev, result.question]);
     alert("Question added.");
+
+    // reset form
     setFormData({
       question: "",
       options: [""],
@@ -70,24 +112,30 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
       subSubChapter: "",
       typeOfQuestion: "MCQ",
     });
-  };
+  } catch (err) {
+    console.error("❌ Failed to add question:", err);
+    alert("Failed to add question to backend.");
+  }
+};
+
 
   return (
   <div>
   <h2 className="text-xl flex w-full   !bg-teal-500 sticky top-0 border stroke-1 p-2 text-white  font-bold">Add Question</h2>
-    <form onSubmit={handleSubmit} className="p-4 max-h-[500px] flex  flex-col overflow-auto border rounded space-y-4 max-w-xl">
+    <form onSubmit={handleSubmit} className="p-9 max-h-[550px] flex flex-col overflow-auto border rounded space-y-6 w-full">
       
-        
+      <label className="bg-teal-300 border p-5 rounded-xl border-teal-800">Question
       <input
         type="text"
         name="question"
         value={formData.question}
         onChange={handleChange}
         placeholder="Question"
-        className="w-full p-2 border "
+        className="w-full !bg-white p-2 min-h-auto border "
         required
       />
-
+      </label>
+      <label>Options</label>
       {formData.options.map((opt, i) => (
         <input
           key={i}

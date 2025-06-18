@@ -7,32 +7,32 @@ import { BrowserRouter, Routes , Route } from 'react-router-dom'
 import HomeScreen from './screens/Dashboard/homescreen'
 import BaseLayout from './components/baseLayout'
 import GeneratePaper from './screens/Paper/generatePaper'
-import { QuestionProvider } from './context/questionContext'
-
+import { AppProvider } from './context/appProvider'
+import AddQuestionForm from './screens/Paper/components/addQuestion'
+import { QuestionList }from './screens/Paper/components/questionList'
+import ViewPapers from './screens/Paper/paperList'
+ 
 function App() {
   return ( 
-  <QuestionProvider>
+  <AppProvider>
   <div className="min-h-screen flex flex-row max-width-full bg-white dark:bg-teal-950 ">
-
-    <BrowserRouter>
+   <BrowserRouter>
    
       <Routes>
-        <Route path='/' element={<BaseLayout><GeneratePaper/></BaseLayout>}/>
+        <Route path='/' element={<LoginPage/>}/>
         <Route path="/login" element={<LoginPage/>}/>
         <Route path='/signup' element={<SignUp/>}/>
         <Route path='/forget-password' element={<ForgetPassword/>}/>
-
-        <Route path='/dashboard' element={<BaseLayout><HomeScreen/></BaseLayout>}/>
-
-        <Route path='/add-question' element={<BaseLayout><HomeScreen/></BaseLayout>}/>
-        <Route path='/view-question' element={<BaseLayout><HomeScreen/></BaseLayout>}/>
+        <Route path='/dashboard' element={<BaseLayout><GeneratePaper/></BaseLayout>}/>
+        <Route path='/add-question' element={<BaseLayout><div className='w-full ml-9 mr-9 space-y-4 justify-center'><AddQuestionForm/></div></BaseLayout>}/>
+        <Route path='/view-question' element={<BaseLayout><QuestionList/></BaseLayout>}/>
         <Route path='/generate-paper' element={<BaseLayout><GeneratePaper/></BaseLayout>}/>
-        <Route path='/view-paper' element={<BaseLayout><HomeScreen/></BaseLayout>}/>
+        <Route path='/view-paper' element={<BaseLayout><ViewPapers/></BaseLayout>}/>
       </Routes>
       
     </BrowserRouter>
   </div>  
-  </QuestionProvider>
+  </AppProvider>
   )
 }
 
