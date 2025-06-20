@@ -4,6 +4,7 @@ export default function ViewPapers() {
   const [papers, setPapers] = useState([]);
   const [selectedPaper, setSelectedPaper] = useState(null);
   const [editing, setEditing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     fetch("https://qbvault1.onrender.com/api/papers", {
@@ -60,6 +61,97 @@ export default function ViewPapers() {
     }
   };
 
+  const downloadPdf = async (selectedPaper) => {
+    if (!selectedPaper || !selectedPaper.sections) {
+      console.error("❌ Invalid selectedPaper:", selectedPaper);
+      return;
+    }
+
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    const title=`Paper Name: ${selectedPaper.paperName}`;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    doc.text(title, (pageWidth - doc.getTextWidth(title)) / 2, 10);
+    doc.setFontSize(12);
+    const subtitle = `Created By: ${selectedPaper.createdBy}`;
+    doc.text(subtitle, (pageWidth - doc.getTextWidth(subtitle)) / 2, 20);
+    doc.text(`Total Marks: ${selectedPaper.totalMarks}`, 10, 30);
+    
+
+    let y = 50;
+
+    selectedPaper.sections.forEach((section, secIndex) => {
+      doc.setFontSize(14);
+      doc.text(`Section ${section.name} - Marks: ${section.marks}`, 10, y);
+      y += 10;
+
+      section.questions.forEach((q, qIndex) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 10;
+        }
+
+        doc.setFontSize(12);
+        doc.text(`${secIndex + 1}.${qIndex + 1}) ${q.questionText}`, 10, y);
+        y += 7;
+
+        q.options.forEach((opt, optIndex) => {
+          doc.text(`   ${String.fromCharCode(65 + optIndex)}. ${opt}`, 15, y);
+          y += 6;
+        });
+
+        doc.setTextColor(0);
+        y += 10;
+      });
+
+      y += 5;
+    });
+    doc.text(`Created At: ${new Date(selectedPaper.createdAt).toLocaleString()}`, 10, 40);
+
+    doc.save(`${selectedPaper.paperName.replace(/\s+/g, "_")}.pdf`);
+  };const downloadWord = (selectedPaper) => {
+  if (!selectedPaper || !selectedPaper.sections) {
+    console.error("❌ Invalid selectedPaper:", selectedPaper);
+    return;
+  }
+
+  let content = "";
+
+  // Header section
+  content += `\n\n\t\t\t${selectedPaper.templateName.toUpperCase()}\n`;
+  content += `\t\t\t${selectedPaper.paperName.toUpperCase()}\n`;
+  content += `\t\t\tTotal Marks: ${selectedPaper.totalMarks}\n\n`;
+
+  selectedPaper.sections.forEach((section, secIndex) => {
+    content += `Section ${section.name}\t\tMarks: ${section.marks}\n`;
+    content += "---------------------------------------------\n";
+
+    section.questions.forEach((q, qIndex) => {
+      content += `${secIndex + 1}.${qIndex + 1}) ${q.questionText}\n`;
+
+      q.options.forEach((opt, optIndex) => {
+        content += `   ${String.fromCharCode(65 + optIndex)}. ${opt}\n`;
+      });
+
+      content += "\n"; // spacing between questions
+    });
+
+    content += "\n"; // spacing between sections
+  });
+
+  const blob = new Blob([content], { type: "application/msword" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${selectedPaper.paperName.replace(/\s+/g, "_")}_Exam.doc`; // better filename
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
   return (
     <div className="p-4 space-y-4 overflow-y-auto w-full">
       <h2 className="text-xl font-bold">📄 Papers</h2>
@@ -97,9 +189,33 @@ export default function ViewPapers() {
           >
             {editing ? "Cancel Edit" : "Edit"}
           </button>
+          <button
+            className="mt-2 px-3 py-1 !bg-yellow-500 text-white rounded ml-2"
+            onClick={async () => {
+              setDownloading(true);
+              await downloadPdf(selectedPaper);
+              setDownloading(false);
+            }}
+            disabled={!selectedPaper}
+          >
+            {downloading ? "Downloading..." : "Download Pdf"}
+          </button>
+          <button
+                className="mt-2 ml-2 px-3 py-1 !bg-blue-500 text-white rounded"
+                onClick={() => downloadWord(selectedPaper)}
+              >
+                Download Word
+          </button>
 
-          {editing &&
-            <form className="space-y-4 mt-4" onSubmit={(e) => { e.preventDefault(); regeneratePaper(); }}>
+
+          {editing && (
+            <form
+              className="space-y-4 mt-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                regeneratePaper();
+              }}
+            >
               {selectedPaper.sections.map((section, sIdx) => (
                 <div key={sIdx} className="border p-4 bg-white rounded">
                   <label className="block font-medium">Section Name</label>
@@ -153,7 +269,7 @@ export default function ViewPapers() {
                 🔄 Regenerate Paper
               </button>
             </form>
-          }
+          )}
         </div>
       )}
     </div>
