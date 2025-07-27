@@ -15,6 +15,24 @@ export default function PaperSummary({
     const total = sections.reduce((acc, section) => acc + (section.marks || 0), 0);
     setTotalMarks(total);
   }, [sections]);
+ const savePaperToLocal = (newPaper) => {
+    try {
+      const stored = localStorage.getItem("papers");
+      const papers = stored ? JSON.parse(stored) : [];
+
+      const index = papers.findIndex((p) => p.paperName === newPaper.paperName);
+      if (index !== -1) {
+        papers[index] = newPaper; // replace existing
+      } else {
+        papers.push(newPaper);
+      }
+
+      localStorage.setItem("papers", JSON.stringify(papers));
+      console.log("🗃️ Paper saved locally under 'papers'");
+    } catch (err) {
+      console.error("❌ Failed to save paper:", err);
+    }
+  };
 
   const handleSectionChange = (index, field, value) => {
     const updatedSections = [...sections];
@@ -54,7 +72,7 @@ const handleSubmit = async (e) => {
   };
 
   console.log("📤 Submitted Paper Data:", paperData);
-
+  savePaperToLocal(paperData);
   try {
     const response = await fetch("https://qbvault1.onrender.com/api/papers", {
       method: "POST",

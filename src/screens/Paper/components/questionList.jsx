@@ -54,6 +54,7 @@ export function QuestionList() {
       });
       if (!res.ok) throw new Error("Failed to fetch filtered questions");
       const data = await res.json();
+     
       setQuestions(data);
     } catch (err) {
       console.error("❌ Error fetching filtered questions:", err);
@@ -65,6 +66,7 @@ export function QuestionList() {
       const res = await fetch("https://qbvault1.onrender.com/api/questions");
       const data = await res.json();
       setAllQuestions(data);
+      // localStorage.setItem("questions", JSON.stringify(data));
       const units = [...new Set(data.map((q) => q.unit))];
       setDropdowns((prev) => ({ ...prev, units }));
     } catch (err) {

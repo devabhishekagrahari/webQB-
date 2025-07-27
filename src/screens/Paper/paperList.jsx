@@ -6,16 +6,64 @@ export default function ViewPapers() {
   const [editing, setEditing] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
+const savePaperLocally = (newPaper) => {
+  try {
+    if (!newPaper || typeof newPaper !== "object") return;
+
+    const existing = JSON.parse(localStorage.getItem("papers")) || [];
+
+    // Match by both templateName + paperName
+    const filtered = existing.filter((p) => {
+      if (newPaper.templateName && newPaper.paperName) {
+        return !(
+          p.templateName === newPaper.templateName &&
+          p.paperName === newPaper.paperName
+        );
+      }
+      // fallback: compare full object
+      return JSON.stringify(p) !== JSON.stringify(newPaper);
+    });
+
+    const updated = [newPaper, ...filtered];
+    localStorage.setItem("papers", JSON.stringify(updated));
+  } catch (err) {
+    console.error("❌ Failed to save paper locally:", err);
+  }
+};
+
+  const getLocalPapers = () => {
+    try {
+      const data = localStorage.getItem("papers");
+      return data ? JSON.parse(data) : [];
+    } catch (err) {
+      console.error("❌ Failed to read papers from localStorage:", err);
+      return [];
+    }
+  };
+
   useEffect(() => {
-    fetch("https://qbvault1.onrender.com/api/papers", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => setPapers(data))
-      .catch((err) => console.error("❌ Fetch Error:", err));
+    const loadPapers = async () => {
+      try {
+        const localPapers = getLocalPapers();
+        if (localPapers.length > 0) {
+          setPapers(localPapers);
+          return;
+        }
+
+        const res = await fetch("https://qbvault1.onrender.com/api/papers", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await res.json();
+        setPapers(data);
+      } catch (err) {
+        console.error("❌ Error loading papers:", err);
+      }
+    };
+
+    loadPapers();
   }, []);
 
   const groupedPapers = papers.reduce((acc, paper) => {
@@ -46,6 +94,7 @@ export default function ViewPapers() {
   };
 
   const regeneratePaper = async () => {
+    savePaperLocally(selectedPaper);
     try {
       const res = await fetch("https://qbvault1.onrender.com/api/papers", {
         method: "POST",
@@ -71,20 +120,19 @@ export default function ViewPapers() {
     const doc = new jsPDF();
 
     doc.setFontSize(16);
-    const title=`Paper Name: ${selectedPaper.paperName}`;
+    const title = `Paper Name: ${selectedPaper.paperName}`;
     const pageWidth = doc.internal.pageSize.getWidth();
     doc.text(title, (pageWidth - doc.getTextWidth(title)) / 2, 10);
     doc.setFontSize(12);
     const subtitle = `Created By: ${selectedPaper.createdBy}`;
     doc.text(subtitle, (pageWidth - doc.getTextWidth(subtitle)) / 2, 20);
     doc.text(`Total Marks: ${selectedPaper.totalMarks}`, 10, 30);
-    
 
     let y = 50;
 
     selectedPaper.sections.forEach((section, secIndex) => {
       doc.setFontSize(14);
-      doc.text(`Section ${section.name} - Marks: ${section.marks}`, 10, y);
+      doc.text(`Section ${section.name} - Marks: ${section.sectionMarks}`, 10, y);
       y += 10;
 
       section.questions.forEach((q, qIndex) => {
@@ -111,46 +159,47 @@ export default function ViewPapers() {
     doc.text(`Created At: ${new Date(selectedPaper.createdAt).toLocaleString()}`, 10, 40);
 
     doc.save(`${selectedPaper.paperName.replace(/\s+/g, "_")}.pdf`);
-  };const downloadWord = (selectedPaper) => {
-  if (!selectedPaper || !selectedPaper.sections) {
-    console.error("❌ Invalid selectedPaper:", selectedPaper);
-    return;
-  }
+  };
 
-  let content = "";
+  const downloadWord = (selectedPaper) => {
+    if (!selectedPaper || !selectedPaper.sections) {
+      console.error("❌ Invalid selectedPaper:", selectedPaper);
+      return;
+    }
 
-  // Header section
-  content += `\n\n\t\t\t${selectedPaper.templateName.toUpperCase()}\n`;
-  content += `\t\t\t${selectedPaper.paperName.toUpperCase()}\n`;
-  content += `\t\t\tTotal Marks: ${selectedPaper.totalMarks}\n\n`;
+    let content = "";
 
-  selectedPaper.sections.forEach((section, secIndex) => {
-    content += `Section ${section.name}\t\tMarks: ${section.marks}\n`;
-    content += "---------------------------------------------\n";
+    content += `\n\n\t\t\t${selectedPaper.templateName.toUpperCase()}\n`;
+    content += `\t\t\t${selectedPaper.paperName.toUpperCase()}\n`;
+    content += `\t\t\tTotal Marks: ${selectedPaper.totalMarks}\n\n`;
 
-    section.questions.forEach((q, qIndex) => {
-      content += `${secIndex + 1}.${qIndex + 1}) ${q.questionText}\n`;
+    selectedPaper.sections.forEach((section, secIndex) => {
+      content += `Section ${section.name}\t\tMarks: ${section.sectionMarks}\n`;
+      content += "---------------------------------------------\n";
 
-      q.options.forEach((opt, optIndex) => {
-        content += `   ${String.fromCharCode(65 + optIndex)}. ${opt}\n`;
+      section.questions.forEach((q, qIndex) => {
+        content += `${secIndex + 1}.${qIndex + 1}) ${q.questionText}\n`;
+
+        q.options.forEach((opt, optIndex) => {
+          content += `   ${String.fromCharCode(65 + optIndex)}. ${opt}\n`;
+        });
+
+        content += "\n";
       });
 
-      content += "\n"; // spacing between questions
+      content += "\n";
     });
 
-    content += "\n"; // spacing between sections
-  });
-
-  const blob = new Blob([content], { type: "application/msword" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `${selectedPaper.paperName.replace(/\s+/g, "_")}_Exam.doc`; // better filename
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-};
+    const blob = new Blob([content], { type: "application/msword" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${selectedPaper.paperName.replace(/\s+/g, "_")}_Exam.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="p-4 space-y-4 overflow-y-auto w-full">
@@ -201,12 +250,11 @@ export default function ViewPapers() {
             {downloading ? "Downloading..." : "Download Pdf"}
           </button>
           <button
-                className="mt-2 ml-2 px-3 py-1 !bg-blue-500 text-white rounded"
-                onClick={() => downloadWord(selectedPaper)}
-              >
-                Download Word
+            className="mt-2 ml-2 px-3 py-1 !bg-blue-500 text-white rounded"
+            onClick={() => downloadWord(selectedPaper)}
+          >
+            Download Word
           </button>
-
 
           {editing && (
             <form
@@ -227,8 +275,8 @@ export default function ViewPapers() {
                   <label className="block font-medium">Section Marks</label>
                   <input
                     className="border p-1 w-full mb-2"
-                    value={section.sectionMarks}
-                    onChange={(e) => handleSectionChange(sIdx, "sectionMarks", e.target.value)}
+                    value={Array.isArray(section.sectionMarks) ? section.sectionMarks[0] : section.sectionMarks}
+                    onChange={(e) => handleSectionChange(sIdx, "sectionMarks", [Number(e.target.value)])}
                   />
                   <label className="block font-medium">Questions</label>
                   {section.questions.map((q, qIdx) => (
@@ -243,7 +291,9 @@ export default function ViewPapers() {
                       <input
                         className="border p-1 w-full mb-1 text-sm"
                         value={q.options.join(", ")}
-                        onChange={(e) => handleQuestionChange(sIdx, qIdx, "options", e.target.value.split(",").map(opt => opt.trim()))}
+                        onChange={(e) =>
+                          handleQuestionChange(sIdx, qIdx, "options", e.target.value.split(",").map((opt) => opt.trim()))
+                        }
                       />
                       <label className="block text-sm font-medium">Correct Answer</label>
                       <input
@@ -251,21 +301,11 @@ export default function ViewPapers() {
                         value={q.correctAnswer}
                         onChange={(e) => handleQuestionChange(sIdx, qIdx, "correctAnswer", e.target.value)}
                       />
-                      <label className="block text-sm font-medium">Marks</label>
-                      <input
-                        type="number"
-                        className="border p-1 w-full text-sm"
-                        value={section.sectionMarks}
-                        onChange={(e) => handleSectionChange(sIdx, "marks", Number(e.target.value))}
-                      />
                     </div>
                   ))}
                 </div>
               ))}
-              <button
-                type="submit"
-                className="mt-4 px-4 py-2 !bg-green-600 text-white rounded"
-              >
+              <button type="submit" className="mt-4 px-4 py-2 !bg-green-600 text-white rounded">
                 🔄 Regenerate Paper
               </button>
             </form>
