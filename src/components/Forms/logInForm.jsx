@@ -7,7 +7,7 @@ const [password, setPassword] = useState("");
 const navigate = useNavigate();
 const handleSubmit = async (e) => {
   e.preventDefault();
-
+  console.log("Submitting login form", { email, password });
   try {
     const res = await fetch("https://qbvault1.onrender.com/auth/login", {
       method: "POST",

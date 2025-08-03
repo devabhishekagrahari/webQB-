@@ -2,9 +2,7 @@
 import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { usePaperData } from "../../../context/appProvider";
-import { db } from "./firebaseConfig.jsx";
-import { doc, getDoc } from "firebase/firestore";
-import { saveQuestionToFirestore } from "./firebaseFunctions.jsx";
+
 
 export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
 
