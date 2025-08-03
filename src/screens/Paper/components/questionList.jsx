@@ -47,9 +47,10 @@ export function QuestionList() {
 
   const fetchFilteredQuestions = async () => {
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch("https://qbvault1.onrender.com/api/questions/filter", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" ,"Authorization": `Bearer ${token}`},
         body: JSON.stringify(filters),
       });
       if (!res.ok) throw new Error("Failed to fetch filtered questions");

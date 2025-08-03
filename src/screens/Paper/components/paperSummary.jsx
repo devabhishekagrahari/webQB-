@@ -74,10 +74,12 @@ const handleSubmit = async (e) => {
   console.log("📤 Submitted Paper Data:", paperData);
   savePaperToLocal(paperData);
   try {
+    const token = localStorage.getItem("token");
     const response = await fetch("https://qbvault1.onrender.com/api/papers", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify(paperData),
     });

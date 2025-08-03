@@ -5,12 +5,37 @@ export default function LoginForm() {
 const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
 const navigate = useNavigate();
-const handleSubmit = (e) => {
-e.preventDefault();
-// TODO: Replace with actual auth logic
-console.log("Logging in with:", { email, password });
-navigate("/dashboard")
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const res = await fetch("https://qbvault1.onrender.com/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Login failed");
+    }
+
+    // Save the token to localStorage
+    localStorage.setItem("token", data.token);
+    // Optional: Save user info if available
+    // localStorage.setItem("user", JSON.stringify(data.user));
+
+    // Navigate to dashboard
+    navigate("/dashboard");
+  } catch (error) {
+    console.error("Login error:", error.message);
+    alert(error.message); // or show toast
+  }
 };
+
 
 return ( <form
    onSubmit={handleSubmit}

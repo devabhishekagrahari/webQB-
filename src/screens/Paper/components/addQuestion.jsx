@@ -57,17 +57,31 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
     subSubChapters: [],
   });
 
-  useEffect(() => {
-    const fetchAllQuestions = async () => {
-      const res = await fetch("https://qbvault1.onrender.com/api/questions");
+useEffect(() => {
+  const fetchAllQuestions = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("https://qbvault1.onrender.com/api/questions", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch questions");
+
       const data = await res.json();
       setAllQuestions(data);
 
       const units = [...new Set(data.map((q) => q.unit))];
       setDropdowns((prev) => ({ ...prev, units }));
-    };
-    fetchAllQuestions();
-  }, []);
+    } catch (err) {
+      console.error("Error fetching questions:", err);
+    }
+  };
+
+  fetchAllQuestions();
+}, []);
+
 
   useEffect(() => {
     const chapterSet = new Set();
@@ -111,11 +125,12 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
 
     try {
       console.log("📤 Posting new question to backend...");
-
+      const token = localStorage.getItem("token");
       const response = await fetch("https://qbvault1.onrender.com/api/questions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(newQuestion),
       });
