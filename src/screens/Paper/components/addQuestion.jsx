@@ -6,15 +6,6 @@ import { usePaperData } from "../../../context/appProvider";
 
 export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
 
-  const docref = doc(db, "users", "dB7eL4fZRgir4b7wR3jA");
-  const getData = async () => {
-    const docsnap = await getDoc(docref);
-    console.log(docsnap.data());
-  };
-
-  useEffect(() => {
-    getData();
-  }, []);
 
   const { questions, setQuestions } = usePaperData();
 
