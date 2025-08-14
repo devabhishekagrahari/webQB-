@@ -178,8 +178,6 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
         options: [""],
         imageUrl: "",
         answer: "",
-        posMarks: 1,
-        negMarks: 0,
       });
     } catch (err) {
       console.error("❌ Failed to add question:", err);
@@ -214,17 +212,18 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
                 />
               </label>
 
-              <label className="font-semibold bg-teal-300 border border-teal-800 p-2 rounded-xl">Options
-              {formData.options.map((opt, i) => (
-                <input
-                  key={i}
-                  type="text"
-                  value={opt}
-                  onChange={(e) => handleOptionChange(i, e.target.value)}
-                  placeholder={`Option ${i + 1}`}
-                  className="w-full border p-2 bg-white rounded"
-                />
-              ))}
+              <label className="font-semibold bg-teal-300 border border-teal-800 p-2 rounded-xl">
+                Options
+                {formData.options.map((opt, i) => (
+                  <input
+                    key={i}
+                    type="text"
+                    value={opt}
+                    onChange={(e) => handleOptionChange(i, e.target.value)}
+                    placeholder={`Option ${i + 1}`}
+                    className="w-full border p-2 bg-white rounded"
+                  />
+                ))}
               </label>
 
               {/* ⛔️ Button style untouched */}
@@ -235,104 +234,160 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
               >
                 + Add Option
               </button>
-              <label className="font-semibold bg-teal-300 border border-teal-800 p-2 rounded-xl">Answers
-              <input
-                type="text"
-                name="answer"
-                value={formData.answer}
-                onChange={handleChange}
-                placeholder="Correct Answer"
-                className="w-full border p-2 bg-white rounded"
-                required
-              /></label>
-              <label className="font-semibold bg-teal-300 border border-teal-800 p-2 rounded-xl">Image URL
-              <input
-                type="text"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                placeholder="Image URL (optional)"
-                className="w-full border p-2  bg-white rounded"
-              /></label>
-              <label className="font-semibold bg-teal-300 border border-teal-800 p-2 rounded-xl">Marking
-              <input
-                type="number"
-                name="posMarks"
-                value={formData.posMarks}
-                onChange={handleChange}
-                placeholder="Positive Marks"
-                className="w-full border p-2 bg-white rounded"
-              /></label>
-              <label className="font-semibold bg-teal-300 border border-teal-800 p-2 rounded-xl">Negative Marking
-              <input
-                type="number"
-                name="negMarks"
-                value={formData.negMarks}
-                onChange={handleChange}
-                placeholder="Negative Marks (optional)"
-                className="w-full border p-2 rounded bg-white"
-              /></label>
+              <label className="font-semibold bg-teal-300 border border-teal-800 p-2 rounded-xl">
+                Answers
+                <input
+                  type="text"
+                  name="answer"
+                  value={formData.answer}
+                  onChange={handleChange}
+                  placeholder="Correct Answer"
+                  className="w-full border p-2 bg-white rounded"
+                  required
+                />
+              </label>
+              <label className="font-semibold bg-teal-300 border border-teal-800 p-2 rounded-xl">
+                Image URL
+                <input
+                  type="text"
+                  name="imageUrl"
+                  value={formData.imageUrl}
+                  onChange={handleChange}
+                  placeholder="Image URL (optional)"
+                  className="w-full border p-2  bg-white rounded"
+                />
+              </label>
+              <label className="font-semibold bg-teal-300 border border-teal-800 p-2 rounded-xl">
+                Marking
+                <input
+                  type="number"
+                  name="posMarks"
+                  value={formData.posMarks}
+                  onChange={handleChange}
+                  placeholder="Positive Marks"
+                  className="w-full border p-2 bg-white rounded"
+                />
+              </label>
+              <label className="font-semibold bg-teal-300 border border-teal-800 p-2 rounded-xl">
+                Negative Marking
+                <input
+                  type="number"
+                  name="negMarks"
+                  value={formData.negMarks}
+                  onChange={handleChange}
+                  placeholder="Negative Marks (optional)"
+                  className="w-full border p-2 rounded bg-white"
+                />
+              </label>
             </div>
 
             {/* Right Column */}
             <div className="flex flex-col space-y-4">
-              <select
-                name="unit"
-                value={formData.unit}
-                onChange={handleChange}
-                className="w-full border p-2 rounded"
-                required
-              >
-                <option value="">Select Unit</option>
-                {dropdowns.units.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-              </select>
+              {/* Unit */}
+              <div className="flex gap-2">
+                <select
+                  name="unit"
+                  value={formData.unit}
+                  onChange={handleChange}
+                  className="w-1/2 border p-2 rounded"
+                >
+                  <option value="">Select Unit</option>
+                  {dropdowns.units.map((u) => (
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
+                  ))}
+                </select>
 
-              <select
-                name="chapter"
-                value={formData.chapter}
-                onChange={handleChange}
-                className="w-full border p-2 rounded"
-              >
-                <option value="">Select Chapter</option>
-                {dropdowns.chapters.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+                <input
+                  type="text"
+                  name="unit"
+                  placeholder="Or enter unit"
+                  value={formData.unit}
+                  onChange={handleChange}
+                  className="w-1/2 border p-2 rounded"
+                />
+              </div>
 
-              <select
-                name="subChapter"
-                value={formData.subChapter}
-                onChange={handleChange}
-                className="w-full border p-2 rounded"
-              >
-                <option value="">Select Sub-Chapter</option>
-                {dropdowns.subChapters.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+              {/* Chapter */}
+              <div className="flex gap-2">
+                <select
+                  name="chapter"
+                  value={formData.chapter}
+                  onChange={handleChange}
+                  className="w-1/2 border p-2 rounded"
+                >
+                  <option value="">Select Chapter</option>
+                  {dropdowns.chapters.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
 
-              <select
-                name="subSubChapter"
-                value={formData.subSubChapter}
-                onChange={handleChange}
-                className="w-full border p-2 rounded"
-              >
-                <option value="">Select Sub-Sub-Chapter</option>
-                {dropdowns.subSubChapters.map((ss) => (
-                  <option key={ss} value={ss}>
-                    {ss}
-                  </option>
-                ))}
-              </select>
+                <input
+                  type="text"
+                  name="chapter"
+                  placeholder="Or enter chapter"
+                  value={formData.chapter}
+                  onChange={handleChange}
+                  className="w-1/2 border p-2 rounded"
+                />
+              </div>
 
+              {/* Sub Chapter */}
+              <div className="flex gap-2">
+                <select
+                  name="subChapter"
+                  value={formData.subChapter}
+                  onChange={handleChange}
+                  className="w-1/2 border p-2 rounded"
+                >
+                  <option value="">Select Sub-Chapter</option>
+                  {dropdowns.subChapters.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  type="text"
+                  name="subChapter"
+                  placeholder="Or enter sub-chapter"
+                  value={formData.subChapter}
+                  onChange={handleChange}
+                  className="w-1/2 border p-2 rounded"
+                />
+              </div>
+
+              {/* Sub-Sub Chapter */}
+              <div className="flex gap-2">
+                <select
+                  name="subSubChapter"
+                  value={formData.subSubChapter}
+                  onChange={handleChange}
+                  className="w-1/2 border p-2 rounded"
+                >
+                  <option value="">Select Sub-Sub-Chapter</option>
+                  {dropdowns.subSubChapters.map((ss) => (
+                    <option key={ss} value={ss}>
+                      {ss}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  type="text"
+                  name="subSubChapter"
+                  placeholder="Or enter sub-sub-chapter"
+                  value={formData.subSubChapter}
+                  onChange={handleChange}
+                  className="w-1/2 border p-2 rounded"
+                />
+              </div>
+
+              {/* Type of Question */}
               <select
                 name="typeOfQuestion"
                 value={formData.typeOfQuestion}
@@ -344,7 +399,6 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
                 <option value="True/False">True/False</option>
               </select>
 
-              {/* ⛔️ Button style untouched */}
               <button
                 type="submit"
                 className="!bg-teal-600 text-white px-4 py-2 rounded p-2 w-fit"

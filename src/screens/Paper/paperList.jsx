@@ -30,6 +30,11 @@ const savePaperLocally = (newPaper) => {
     console.error("❌ Failed to save paper locally:", err);
   }
 };
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("You must be logged in to add a question.");
+      return;
+    }
 
   const getLocalPapers = () => {
     try {
@@ -54,6 +59,7 @@ const savePaperLocally = (newPaper) => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
         const data = await res.json();
