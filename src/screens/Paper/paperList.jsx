@@ -1,4 +1,23 @@
 import React, { useEffect, useState } from "react";
+import { 
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  AlignmentType,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  Header,
+  Footer,
+  TabStopPosition,
+  TabStopType,
+  ImageRun,
+  BorderStyle,
+} from "docx";
+import logo from "../../assets/logo.jpg";
+import { saveAs } from "file-saver";
 
 export default function ViewPapers() {
   const [papers, setPapers] = useState([]);
@@ -31,6 +50,7 @@ const savePaperLocally = (newPaper) => {
   }
 };
     const token = localStorage.getItem("token");
+
     if (!token) {
       alert("You must be logged in to add a question.");
       return;
@@ -124,21 +144,83 @@ const savePaperLocally = (newPaper) => {
 
     const { jsPDF } = await import("jspdf");
     const doc = new jsPDF();
+    const img = new Image();
+    img.src = logo;
 
+    let  y = 10
+
+    // Logo 
+    img.onload = () => {
+    doc.addImage(img, "JPEG", 10, y, 24, 24);
+
+    doc.setFont("times", "normal");
+
+    // Paper Name
     doc.setFontSize(16);
-    const title = `Paper Name: ${selectedPaper.paperName}`;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    doc.text(title, (pageWidth - doc.getTextWidth(title)) / 2, 10);
-    doc.setFontSize(12);
-    const subtitle = `Created By: ${selectedPaper.createdBy}`;
-    doc.text(subtitle, (pageWidth - doc.getTextWidth(subtitle)) / 2, 20);
-    doc.text(`Total Marks: ${selectedPaper.totalMarks}`, 10, 30);
+    doc.setFont("times", "bold");
 
-    let y = 50;
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    const template = `${selectedPaper.templateName}`;
+    doc.text(template, (pageWidth - doc.getTextWidth(template)) / 2, y+=5);
+    
+    const title = `${selectedPaper.paperName}`;
+    doc.text(title, (pageWidth - doc.getTextWidth(title)) / 2, y+=7);
+
+    // Created by
+    doc.setFontSize(12);
+    doc.setFont("times", "normal");
+    const subtitle = `Created By: ${selectedPaper.createdBy}`;
+    doc.text(subtitle, (pageWidth - doc.getTextWidth(subtitle)) / 2, y+=7);
+
+    // Time(left side)
+    doc.setFont("times", "bold");
+    doc.text(
+      `Time: 3hrs`,
+      10,
+      y+=11
+    );
+    doc.text(`Total Marks: ${selectedPaper.totalMarks}`, pageWidth - 10, y, {
+      align: "right",
+    });
+
+    // Margin Line
+    doc.setLineWidth(0.2);
+    doc.line(10, y+=5, pageWidth - 10, y);
+
+    // Intructions (Static)
+    doc.setFont("times", "bold");
+    doc.setFontSize(13);
+    doc.text("Instructions:", 10, y+=10);
+
+    doc.setFont("times", "normal");
+    doc.setFontSize(12);
+    y +=7;
+    const instructions = [
+      "1. All questions are compulsory.",
+      "2. Answer neatly in the space provided.",
+      "3. Do not use calculators unless specified.",
+      "4. Manage your time wisely."
+    ];
+    instructions.forEach((inst) => {
+      doc.text(inst, 15, y);
+      y += 7;
+    });
+
+    // Margin Line
+    doc.setLineWidth(0.2);
+    doc.line(10, y, pageWidth - 10, y);
+    
+    // Section
+    y += 10;
 
     selectedPaper.sections.forEach((section, secIndex) => {
+
+      doc.setFont("times", "bold");
       doc.setFontSize(14);
-      doc.text(`Section ${section.name} - Marks: ${section.sectionMarks}`, 10, y);
+
+      const sectionTitle = `Section ${section.name}  (Marks: ${section.sectionMarks})`;
+      doc.text(sectionTitle, pageWidth / 2, y, { align: "center" });
       y += 10;
 
       section.questions.forEach((q, qIndex) => {
@@ -147,6 +229,7 @@ const savePaperLocally = (newPaper) => {
           y = 10;
         }
 
+        doc.setFont("times", "normal");
         doc.setFontSize(12);
         doc.text(`${secIndex + 1}.${qIndex + 1}) ${q.questionText}`, 10, y);
         y += 7;
@@ -162,50 +245,253 @@ const savePaperLocally = (newPaper) => {
 
       y += 5;
     });
-    doc.text(`Created At: ${new Date(selectedPaper.createdAt).toLocaleString()}`, 10, 40);
+
+    doc.setFont("times", "italic");
+    doc.setFontSize(10);
+    doc.text(`Created At: ${new Date(selectedPaper.createdAt).toLocaleString()}`, 10, 290);
 
     doc.save(`${selectedPaper.paperName.replace(/\s+/g, "_")}.pdf`);
   };
+   };
 
-  const downloadWord = (selectedPaper) => {
-    if (!selectedPaper || !selectedPaper.sections) {
-      console.error("❌ Invalid selectedPaper:", selectedPaper);
-      return;
-    }
+const downloadWord = async (selectedPaper) => {
+  if (!selectedPaper || !selectedPaper.sections) {
+    console.error("❌ Invalid selectedPaper:", selectedPaper);
+    return;
+  }
 
-    let content = "";
+  // Logo
+  const response = await fetch(logo);
+  const logoBuffer = await response.arrayBuffer();
 
-    content += `\n\n\t\t\t${selectedPaper.templateName.toUpperCase()}\n`;
-    content += `\t\t\t${selectedPaper.paperName.toUpperCase()}\n`;
-    content += `\t\t\tTotal Marks: ${selectedPaper.totalMarks}\n\n`;
+  const doc = new Document({
+    sections: [
+      {
+        properties: {
+          page: {
+            margin: { top: 500, right: 500, bottom: 500, left: 500 },
+          },
+        },
 
-    selectedPaper.sections.forEach((section, secIndex) => {
-      content += `Section ${section.name}\t\tMarks: ${section.sectionMarks}\n`;
-      content += "---------------------------------------------\n";
+        children: [
+          // === Table 1: Logo + Top 3 Lines ===
+          new Table({
+            rows: [
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        spacing: { before: 0, after: 0 },
+                        children: [
+                          new ImageRun({
+                            data: logoBuffer,
+                            transformation: { width: 90, height: 90 },
+                          }),
+                        ],
+                      }),
+                    ],
+                    width: { size: 12, type: "pct" },
+                    borders: {
+                      top: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                      bottom: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                      left: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                      right: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                    }
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        indent: { left: -500 },
+                        children: [
+                          new TextRun({
+                            text: selectedPaper.templateName || "Template",
+                            font: "Times New Roman",
+                            bold: true,
+                            size: 32,
+                          }),
+                        ],
+                      }),
+                      new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        
+                        spacing: { before: 50 },
+                        indent: { left: -300 },
+                        children: [
+                          new TextRun({
+                            text: selectedPaper.paperName || "Exam Paper",
+                            font: "Times New Roman",
+                            bold: true,
+                            size: 32,
+                          }),
+                        ],
+                      }),
+                      new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        
+                        spacing: { before: 50 },
+                        indent: { left: -300 },
+                        children: [
+                          new TextRun({
+                            text: `Created By: ${selectedPaper.createdBy}`,
+                            font: "Times New Roman",
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                    ],
+                    width: { size: 92, type: "pct" },
+                    verticalAlign: "center",
+                    borders: {
+                      top: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                      bottom: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                      left: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                      right: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                    }
+                  }),
+                ],
+              }),
+            ],
+            width: { size: 100, type: "pct" },
+            borders: {
+              top: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+              bottom: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+              left: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+              right: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+            }
+          }),
 
-      section.questions.forEach((q, qIndex) => {
-        content += `${secIndex + 1}.${qIndex + 1}) ${q.questionText}\n`;
+          // Time (left) + Marks (right)
+          new Paragraph({
+            spacing: { after: 200,before : 200 },
+            tabStops: [{ type: TabStopType.RIGHT, position: 12000 }],
+            children: [
+              new TextRun({
+                text: `Time: 3 hrs`,
+                bold: true,
+                font: "Times New Roman",
+                size: 24,
+              }),
+              new TextRun({ text: "\t" }),
+              new TextRun({
+                text: `Total Marks: ${selectedPaper.totalMarks || 0}`,
+                bold: true,
+                font: "Times New Roman",
+                size: 24,
+              }),
+            ],
+          }),
+          // Line Above Instructions 
+          new Paragraph({
+            spacing: { before: 50 },
+            border: { top: { style: "single", size: 6, color: "000000" } },
+          }),
 
-        q.options.forEach((opt, optIndex) => {
-          content += `   ${String.fromCharCode(65 + optIndex)}. ${opt}\n`;
-        });
+          // Instructions 
+          new Paragraph({
+            spacing: { before: 100, after: 100 },
+            children: [
+              new TextRun({
+                text: "Instructions:",
+                font: "Times New Roman",
+                bold: true,
+                size: 26,
+              }),
+            ],
+          }),
+          ...[
+            "1. All questions are compulsory.",
+            "2. Answer neatly in the space provided.",
+            "3. Do not use calculators unless specified.",
+            "4. Manage your time wisely.",
+          ].map(
+            (inst) =>
+              new Paragraph({
+                spacing: { after: 140 }, // 7pt
+                indent: { left: 300 },   // ~0.15 inch left indent
+                children: [
+                  new TextRun({
+                    text: inst,
+                    font: "Times New Roman",
+                    size: 24, // 12 pt
+                  }),
+                ],
+              })
+          ),
 
-        content += "\n";
-      });
+          // Line Below Instructions 
+          new Paragraph({
+            border: { bottom: { style: "single", size: 6, color: "000000" } },
+          }),
 
-      content += "\n";
-    });
+          // Sections & Questions 
+          ...selectedPaper.sections.flatMap((section, sIdx) => [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 400, after: 200 },
+              children: [
+                new TextRun({
+                  text: `Section ${section.name} (Marks: ${section.sectionMarks})`,
+                  font: "Times New Roman",
+                  bold: true,
+                  size: 26,
+                }),
+              ],
+            }),
+            ...section.questions.flatMap((q, qIdx) => [
+              new Paragraph({
+                spacing: { before: 200, after: 100 },
+                children: [
+                  new TextRun({
+                    text: `${sIdx + 1}.${qIdx + 1}) ${q.questionText}`,
+                    font: "Times New Roman",
+                    size: 24,
+                  }),
+                ],
+              }),
+              ...q.options.map(
+                (opt, j) =>
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: `   ${String.fromCharCode(65 + j)}. ${opt}`,
+                        font: "Times New Roman",
+                        size: 24,
+                      }),
+                    ],
+                  })
+              ),
+            ]),
+          ]),
+        ],
 
-    const blob = new Blob([content], { type: "application/msword" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${selectedPaper.paperName.replace(/\s+/g, "_")}_Exam.doc`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+        footers: {
+          default: new Footer({
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.LEFT,
+                children: [
+                  new TextRun({
+                    text: `Created At: ${new Date(
+                      selectedPaper.createdAt
+                    ).toLocaleString()}`,
+                    italics: true,
+                    font: "Times New Roman",
+                    size: 20,
+                  }),
+                ],
+              }),
+            ],
+          }),
+        },
+      },
+    ],
+  });
+
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, `${selectedPaper.paperName || "ExamPaper"}.docx`);
+};
 
   return (
     <div className="p-4 space-y-4 overflow-y-auto w-full">

@@ -6,5 +6,8 @@ import commonjs from 'vite-plugin-commonjs'
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    global: {},
+  },
   plugins: [react() , tailwindcss() , commonjs()] 
 })
