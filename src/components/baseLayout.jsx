@@ -2,18 +2,19 @@ import { useState } from "react";
 import Header from "./basic/header";
 import Sidebar from "./basic/sidebar";
 
-export default function BaseLayout({children}){
-    const [isOpen , setIsOpen]= useState(false);
-    const toggleSidebar =() => {setIsOpen((prev)=> !prev);}
-      return (
-    <div className="min-h-screen fixed min-w-screen flex  bg-zinc-100 dark:bg-zinc-950">
-    <Header toggleSidebar={toggleSidebar}/>
-    {isOpen && <Sidebar />}
-    
-      <main
-        className={"flex min-w-screen max-h-screen max-w-screen min-h-screen p-4 bg-white pt-[60px] "}
-      >
-        {children}
+export default function BaseLayout({ children }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const toggleSidebar = () => setIsOpen((prev) => !prev);
+
+  return (
+    <div className="min-h-screen w-screen flex bg-zinc-100 dark:bg-zinc-950">
+      <Header toggleSidebar={toggleSidebar} />
+      <Sidebar isOpen={isOpen} />
+
+      <main className="flex-1 p-4 pt-[60px] transition-all duration-300 overflow-y-auto bg-zinc-100 dark:bg-zinc-950">
+        <div className="min-h-[calc(100vh-80px)]">
+          {children}
+        </div>
       </main>
     </div>
   );
