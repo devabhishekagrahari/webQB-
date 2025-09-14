@@ -8,6 +8,12 @@ export default function PaperSummary({
   setPaperName,
   totalMarks,
   setTotalMarks,
+  hours,
+  setHours,
+  minutes,
+  setMinutes,
+  instructions,
+  setPaperInstructions,
   sections,
   setSections,
 }) {
@@ -68,6 +74,9 @@ const handleSubmit = async (e) => {
     templateName,
     paperName,
     totalMarks,
+    //hours,
+    //minutes,
+    //instructions,
     sections,
   };
 
@@ -132,6 +141,45 @@ const handleSubmit = async (e) => {
           className="w-full border rounded px-3 py-2"
           value={totalMarks}
           onChange={(e) => setTotalMarks(parseInt(e.target.value))}
+        />
+      </div>
+
+      <div className="mb-6">
+        <label className="block font-medium text-gray-700 mb-2">
+          🎯 Exam Duration:
+        </label>
+        <div className="flex gap-4">
+          {/* Hours Input */}
+          <div className="flex-1">
+            <label className="block text-gray-600 text-sm mb-1">Hours</label>
+            <input
+            type="number"
+            className="w-full border rounded px-3 py-2"
+            value={hours}
+            onChange={(e) => setHours(parseInt(e.target.value) || 0)}
+            />
+          </div>
+
+          {/* Minutes Input */}
+          <div className="flex-1">
+          <label className="block text-gray-600 text-sm mb-1">Minutes</label>
+      <input
+        type="number"
+        className="w-full border rounded px-3 py-2"
+        value={minutes}
+        onChange={(e) => setMinutes(parseInt(e.target.value) || 0)}
+      />
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <label className="block font-medium text-gray-700 mb-1">📄 Instructions(Optional):</label>
+        <input
+          type="text"
+          className="w-full border rounded px-3 py-2"
+          value={instructions}
+          onChange={(e) => setPaperInstructions(e.target.value)}
         />
       </div>
 
