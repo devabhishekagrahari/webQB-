@@ -1,22 +1,59 @@
 export function QuestionDetails({ q, handleAddQuestion }) {
   return (
     <tr className="bg-gray-50">
-      <td colSpan={9} className="p-4 text-gray-700">
-        {q.imageUrl && <img src={q.imageUrl} alt="question" className="max-w-xs mb-2 rounded-lg shadow-sm" />}
-        <div><strong>Options:</strong> {q.options?.join(", ")}</div>
-        <div><strong>Answer:</strong> {q.correctAnswer}</div>
-        <div><strong>Marks:</strong> +{q.posMarks} / -{q.negMarks}</div>
-        <div><strong>Unit:</strong> {q.unit}</div>
-        <div><strong>Chapter:</strong> {q.chapter}</div>
-        <div><strong>Sub-Chapter:</strong> {q.subChapter}</div>
-        <div><strong>Sub-Sub-Chapter:</strong> {q.subSubChapter}</div>
-        <div><strong>Created By:</strong> {q.createdBy}</div>
-        <div><strong>Timestamp:</strong> {new Date(q.timestamp).toLocaleString()}</div>
+      <td colSpan={9} className="p-6 text-gray-700">
+        {/* Image Preview */}
+        {q.imageUrl && (
+          <div className="mb-4">
+            <img
+              src={q.imageUrl}
+              alt="question"
+              className="max-w-sm rounded-lg shadow-md"
+            />
+          </div>
+        )}
+
+        {/* Question Meta Info */}
+        <div className="grid grid-cols-2 gap-y-2 gap-x-6 text-sm">
+          <div>
+            <span className="font-semibold">Options:</span>{" "}
+            {q.options?.join(", ")}
+          </div>
+          <div>
+            <span className="font-semibold">Answer:</span> {q.correctAnswer}
+          </div>
+          <div>
+            <span className="font-semibold">Marks:</span> +{q.posMarks} / -
+            {q.negMarks}
+          </div>
+          <div>
+            <span className="font-semibold">Unit:</span> {q.unit}
+          </div>
+          <div>
+            <span className="font-semibold">Chapter:</span> {q.chapter}
+          </div>
+          <div>
+            <span className="font-semibold">Sub-Chapter:</span> {q.subChapter}
+          </div>
+          <div>
+            <span className="font-semibold">Sub-Sub-Chapter:</span>{" "}
+            {q.subSubChapter}
+          </div>
+          <div>
+            <span className="font-semibold">Created By:</span> {q.createdBy}
+          </div>
+          <div className="col-span-2">
+            <span className="font-semibold">Timestamp:</span>{" "}
+            {new Date(q.timestamp).toLocaleString()}
+          </div>
+        </div>
+
+        {/* Add Question Button */}
         <button
-          className="mt-2 text-teal-600 font-semibold hover:underline"
           onClick={() => handleAddQuestion(q)}
+          className="mt-4 inline-flex items-center text-teal-600 font-semibold hover:text-teal-700 transition-colors"
         >
-          ➕ Add Question
+          <span className="mr-1">➕</span> Add Question
         </button>
       </td>
     </tr>

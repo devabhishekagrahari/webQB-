@@ -14,18 +14,27 @@ export function QuestionList({ mode = "full" }) {
     createdBy: "admin@example.com",
     type: "MCQ",
   });
-  const { sections, setSections, selectedQuestions, setSelectedQuestions } = usePaperData();
+  const { sections, setSections, selectedQuestions, setSelectedQuestions } =
+    usePaperData();
   const { questions, dropdowns } = useQuestions(filters);
   const [openQuestionId, setOpenQuestionId] = useState(null);
 
-  const toggleQuestion = (id) => setOpenQuestionId((prev) => (prev === id ? null : id));
+  const toggleQuestion = (id) =>
+    setOpenQuestionId((prev) => (prev === id ? null : id));
 
   function handleAddQuestion(q) {
     const sectionNames = sections.map((s) => s.name);
     const sectionName = prompt(`Select section: ${sectionNames.join(", ")}`);
-    const selectedSectionIndex = sections.findIndex((s) => s.name === sectionName);
+    const selectedSectionIndex = sections.findIndex(
+      (s) => s.name === sectionName
+    );
 
-    if (selectedSectionIndex !== -1 && !sections[selectedSectionIndex].questions.find((item) => item._id === q._id)) {
+    if (
+      selectedSectionIndex !== -1 &&
+      !sections[selectedSectionIndex].questions.find(
+        (item) => item._id === q._id
+      )
+    ) {
       const updatedSections = [...sections];
       const section = updatedSections[selectedSectionIndex];
       section.questionCount += 1;
@@ -33,7 +42,9 @@ export function QuestionList({ mode = "full" }) {
       section.marks = section.sectionMarks * section.questionCount;
       setSections(updatedSections);
     } else {
-      alert("Either no section selected or question already exists in the section.");
+      alert(
+        "Either no section selected or question already exists in the section."
+      );
       return;
     }
 
@@ -55,12 +66,15 @@ export function QuestionList({ mode = "full" }) {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-700 sticky top-0 z-10">
             <tr>
-              <th className="p-3"><input type="checkbox" /></th>
+              <th className="p-3">
+                <input type="checkbox" />
+              </th>
               <th className="p-3">ID</th>
               <th className="p-3 text-left">Question</th>
               <th className="p-3">Type</th>
               <th className="p-3">Difficulty</th>
               <th className="p-3">Category</th>
+              <th className="p-3">Add Question Item</th>
               {mode === "full" && (
                 <>
                   <th className="p-3">Last Modified</th>

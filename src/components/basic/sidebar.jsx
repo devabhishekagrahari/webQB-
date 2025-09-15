@@ -1,12 +1,12 @@
-import { 
-  FilePlus, 
-  FileText, 
-  PlusCircle, 
-  Search, 
+import {
+  FilePlus,
+  FileText,
+  PlusCircle,
+  Search,
   LayoutDashboard,
   User,
   Settings,
-  LogOut
+  LogOut,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -64,7 +64,7 @@ export default function Sidebar({ isOpen }) {
 
       {/* Bottom nav */}
       <div className="flex flex-col space-y-4 p-2 font-semibold mb-6">
-        <Link
+        {/* <Link
           to="/profile"
           className="flex items-center space-x-2 bg-white rounded-xl p-3 hover:bg-teal-50"
         >
@@ -78,10 +78,10 @@ export default function Sidebar({ isOpen }) {
         >
           <Settings size={20} className="text-teal-400" />
           {isOpen && <span className="text-zinc-800">Settings</span>}
-        </Link>
+        </Link> */}
 
         <Link
-          to="/logout"
+          to="/login"
           className="flex items-center space-x-2 bg-white rounded-xl p-3 hover:bg-teal-50"
         >
           <LogOut size={20} className="text-red-500" />

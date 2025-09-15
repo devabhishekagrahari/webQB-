@@ -14,7 +14,14 @@ const typeClass = {
   Case: "bg-orange-100 text-orange-700",
 };
 
-export function QuestionRow({ q, index, isOpen, toggle, handleAddQuestion, mode = "full" }) {
+export function QuestionRow({
+  q,
+  index,
+  isOpen,
+  toggle,
+  handleAddQuestion,
+  mode = "full",
+}) {
   const difficulty = q.difficulty || "Medium";
 
   return (
@@ -23,7 +30,9 @@ export function QuestionRow({ q, index, isOpen, toggle, handleAddQuestion, mode 
         className="hover:bg-gray-50 transition cursor-pointer"
         onClick={() => toggle(q._id)}
       >
-        <td className="p-3"><input type="checkbox" /></td>
+        <td className="p-3">
+          <input type="checkbox" />
+        </td>
         <td className="p-3 font-mono text-center text-gray-700">
           {`Q${String(index + 1).padStart(3, "0")}`}
         </td>
@@ -50,14 +59,30 @@ export function QuestionRow({ q, index, isOpen, toggle, handleAddQuestion, mode 
         </td>
 
         <td className="p-3">{q.category || "Theory"}</td>
+        <td>
+          <button
+            onClick={() => handleAddQuestion(q)}
+            className="mt-4 inline-flex items-center text-teal-600 font-semibold hover:text-teal-700 transition-colors"
+          >
+            <span className="p-3 self-center">➕</span>
+          </button>
+        </td>
 
         {mode === "full" && (
           <>
-            <td className="p-3">{new Date(q.timestamp).toLocaleDateString()}</td>
+            <td className="p-3">
+              {new Date(q.timestamp).toLocaleDateString()}
+            </td>
             <td className="p-3 flex gap-2">
-              <button className="p-1 hover:text-blue-600 hover:scale-110 transition"><Eye size={16} /></button>
-              <button className="p-1 hover:text-green-600 hover:scale-110 transition"><Pencil size={16} /></button>
-              <button className="p-1 hover:text-red-600 hover:scale-110 transition"><Trash2 size={16} /></button>
+              <button className="p-1 hover:text-blue-600 hover:scale-110 transition">
+                <Eye size={16} />
+              </button>
+              <button className="p-1 hover:text-green-600 hover:scale-110 transition">
+                <Pencil size={16} />
+              </button>
+              <button className="p-1 hover:text-red-600 hover:scale-110 transition">
+                <Trash2 size={16} />
+              </button>
             </td>
           </>
         )}
