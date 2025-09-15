@@ -9,7 +9,8 @@ import BaseLayout from './components/baseLayout'
 import GeneratePaper from './screens/Paper/generatePaper'
 import { AppProvider } from './context/appProvider'
 import AddQuestionForm from './screens/Paper/components/addQuestion'
-import { QuestionList }from './screens/Paper/components/questionList'
+import { QuestionList }from './screens/Paper/components/QuestionList/QuestionList'
+//import { QuestionList }from './screens/Paper/components/questionList'
 import ViewPapers from './screens/Paper/paperList'
  
 function App() {
@@ -24,8 +25,8 @@ function App() {
         <Route path='/signup' element={<SignUp/>}/>
         <Route path='/forget-password' element={<ForgetPassword/>}/>
         <Route path='/dashboard' element={<BaseLayout><GeneratePaper/></BaseLayout>}/>
-        <Route path='/add-question' element={<BaseLayout><div className='w-full ml-9 mr-9 space-y-4 justify-center'><AddQuestionForm/></div></BaseLayout>}/>
-        <Route path='/view-question' element={<BaseLayout><QuestionList/></BaseLayout>}/>
+        <Route path='/add-question' element={<BaseLayout><AddQuestionForm/></BaseLayout>}/>
+        <Route path='/view-question' element={<BaseLayout><QuestionList mode="full"/></BaseLayout>}/>
         <Route path='/generate-paper' element={<BaseLayout><GeneratePaper/></BaseLayout>}/>
         <Route path='/view-paper' element={<BaseLayout><ViewPapers/></BaseLayout>}/>
       </Routes>

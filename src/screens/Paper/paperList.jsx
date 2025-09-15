@@ -18,6 +18,7 @@ import {
 } from "docx";
 import logo from "../../assets/logo.jpg";
 import { saveAs } from "file-saver";
+import BASE_URL from '../../utils/api';
 
 export default function ViewPapers() {
   const [papers, setPapers] = useState([]);
@@ -75,7 +76,7 @@ const savePaperLocally = (newPaper) => {
           return;
         }
 
-        const res = await fetch("https://qbvault1.onrender.com/api/papers", {
+        const res = await fetch(`${BASE_URL}/papers`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -122,7 +123,7 @@ const savePaperLocally = (newPaper) => {
   const regeneratePaper = async () => {
     savePaperLocally(selectedPaper);
     try {
-      const res = await fetch("https://qbvault1.onrender.com/api/papers", {
+      const res = await fetch(`${BASE_URL}/papers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(selectedPaper),
@@ -494,8 +495,8 @@ const downloadWord = async (selectedPaper) => {
 };
 
   return (
-    <div className="p-4 space-y-4 overflow-y-auto w-full">
-      <h2 className="text-xl font-bold">📄 Papers</h2>
+    <div className="p-6 w-full flex flex-col rounded-2xl bg-white shadow-sm">
+      <h2 className="text-xl font-bold pb-4">View Question Papers</h2>
       <div className="space-y-2">
         {Object.keys(groupedPapers).map((template) => (
           <div key={template}>

@@ -1,4 +1,5 @@
  import { useEffect } from "react";
+import BASE_URL from '../../../utils/api' ;
 
 export default function PaperSummary({
   selectedQuestions,
@@ -17,10 +18,11 @@ export default function PaperSummary({
   sections,
   setSections,
 }) {
-    useEffect(() => {
+  useEffect(() => {
     const total = sections.reduce((acc, section) => acc + (section.marks || 0), 0);
     setTotalMarks(total);
   }, [sections]);
+
  const savePaperToLocal = (newPaper) => {
     try {
       const stored = localStorage.getItem("papers");
@@ -84,7 +86,7 @@ const handleSubmit = async (e) => {
   savePaperToLocal(paperData);
   try {
     const token = localStorage.getItem("token");
-    const response = await fetch("https://qbvault1.onrender.com/api/papers", {
+    const response = await fetch(`${BASE_URL}/papers`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -108,78 +110,93 @@ const handleSubmit = async (e) => {
   }
 };
 
-
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white shadow-md max-w-[600px] rounded-xl p-6 m-4 border border-gray-200"
+      className="p-6 w-full flex flex-col rounded-2xl bg-white shadow-sm"
     >
+      <h2 className="text-xl font-bold pb-4">Generate Question Papers</h2>
       <div className="mb-4">
-        <label className="block font-medium text-gray-700 mb-1">🧾 Template Name:</label>
+        <label className="text-sm font-medium text-gray-700">🧾 Template Name</label>
         <input
           type="text"
-          className="w-full border rounded px-3 py-2"
+          className="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-gray-50 
+            focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
           value={templateName}
           onChange={(e) => setTemplateName(e.target.value)}
+          placeholder="Enter your template name"
+          required
         />
       </div>
 
       <div className="mb-4">
-        <label className="block font-medium text-gray-700 mb-1">📄 Paper Name:</label>
+        <label className="text-sm font-medium text-gray-700">📄 Paper Name</label>
         <input
           type="text"
-          className="w-full border rounded px-3 py-2"
+          className="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-gray-50 
+            focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
           value={paperName}
           onChange={(e) => setPaperName(e.target.value)}
+          placeholder="Enter your paper name"
+          required
         />
       </div>
 
       <div className="mb-6">
-        <label className="block font-medium text-gray-700 mb-1">🎯 Total Marks:</label>
+        <label className="text-sm font-medium text-gray-700">🎯 Total Marks</label>
         <input
           type="number"
-          className="w-full border rounded px-3 py-2"
+          className="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-gray-50 
+            focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
           value={totalMarks}
           onChange={(e) => setTotalMarks(parseInt(e.target.value))}
+          placeholder="Enter the maximun marks"
+          required
         />
       </div>
 
       <div className="mb-6">
-        <label className="block font-medium text-gray-700 mb-2">
-          🎯 Exam Duration:
-        </label>
+        <label className="block font-medium text-gray-700 mb-2">🎯 Exam Duration</label>
         <div className="flex gap-4">
           {/* Hours Input */}
           <div className="flex-1">
-            <label className="block text-gray-600 text-sm mb-1">Hours</label>
+            <label className="text-sm font-medium text-gray-700">Hours</label>
             <input
             type="number"
-            className="w-full border rounded px-3 py-2"
+            className="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-gray-50 
+            focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
             value={hours}
             onChange={(e) => setHours(parseInt(e.target.value) || 0)}
+            placeholder="Duration in hours"
+            required
             />
           </div>
 
           {/* Minutes Input */}
           <div className="flex-1">
-          <label className="block text-gray-600 text-sm mb-1">Minutes</label>
-      <input
-        type="number"
-        className="w-full border rounded px-3 py-2"
-        value={minutes}
-        onChange={(e) => setMinutes(parseInt(e.target.value) || 0)}
-      />
+          <label className="text-sm font-medium text-gray-700">Minutes</label>
+          <input
+            type="number"
+            className="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-gray-50 
+            focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
+            value={minutes}
+            onChange={(e) => setMinutes(parseInt(e.target.value) || 0)}
+            placeholder="Duration in minutes"
+            required
+          />
           </div>
         </div>
       </div>
 
       <div className="mb-4">
-        <label className="block font-medium text-gray-700 mb-1">📄 Instructions(Optional):</label>
+        <label className="text-sm font-medium text-gray-700">📄 Instructions(Optional)</label>
         <input
           type="text"
-          className="w-full border rounded px-3 py-2"
+          className="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-gray-50 
+            focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
           value={instructions}
           onChange={(e) => setPaperInstructions(e.target.value)}
+          placeholder="Enter the maximun marks"
         />
       </div>
 
