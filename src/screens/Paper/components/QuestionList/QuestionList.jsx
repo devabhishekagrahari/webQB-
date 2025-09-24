@@ -3,6 +3,7 @@ import { usePaperData } from "../../../../context/appProvider";
 import { useQuestions } from "./useQuestions";
 import { QuestionFilters } from "./QuestionFilters";
 import { QuestionRow } from "./QuestionRow";
+import BASE_URL from "../../../../utils/api";
 
 export function QuestionList({ mode = "full" }) {
   const [search, setSearch] = useState("");
@@ -14,8 +15,10 @@ export function QuestionList({ mode = "full" }) {
     createdBy: "admin@example.com",
     type: "MCQ",
   });
+
   const { sections, setSections, selectedQuestions, setSelectedQuestions } =
     usePaperData();
+
   const { questions, dropdowns } = useQuestions(filters);
   const [openQuestionId, setOpenQuestionId] = useState(null);
 
@@ -53,6 +56,55 @@ export function QuestionList({ mode = "full" }) {
     }
   }
 
+  async function handleDeleteQuestion(id) {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${BASE_URL}/questions/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        console.log("response:", res);
+      }
+
+      // refresh UI
+      alert("Question deleted successfully ✅");
+      window.location.reload();
+    } catch (err) {
+      console.error("❌ Delete error:", err);
+      alert("Failed to delete question.");
+    }
+  }
+
+  // Filter questions by search + dropdown filters
+  const filteredQuestions = questions.filter((q) => {
+    const matchesSearch =
+      q.questionText.toLowerCase().includes(search.toLowerCase()) ||
+      q._id.toLowerCase().includes(search.toLowerCase());
+
+    const matchesUnit = filters.unit ? q.unit === filters.unit : true;
+    const matchesChapter = filters.chapter
+      ? q.chapter === filters.chapter
+      : true;
+    const matchesSubChapter = filters.subChapter
+      ? q.subChapter === filters.subChapter
+      : true;
+    const matchesSubSubChapter = filters.subSubChapter
+      ? q.subSubChapter === filters.subSubChapter
+      : true;
+
+    return (
+      matchesSearch &&
+      matchesUnit &&
+      matchesChapter &&
+      matchesSubChapter &&
+      matchesSubSubChapter
+    );
+  });
+
   return (
     <div className="p-6 w-full flex flex-col rounded-2xl bg-white shadow-sm">
       <QuestionFilters
@@ -84,13 +136,8 @@ export function QuestionList({ mode = "full" }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {questions
-              .filter(
-                (q) =>
-                  q.questionText.toLowerCase().includes(search.toLowerCase()) ||
-                  q._id.toLowerCase().includes(search.toLowerCase())
-              )
-              .map((q, i) => (
+            {filteredQuestions.length > 0 ? (
+              filteredQuestions.map((q, i) => (
                 <QuestionRow
                   key={q._id}
                   q={q}
@@ -98,10 +145,11 @@ export function QuestionList({ mode = "full" }) {
                   isOpen={openQuestionId === q._id}
                   toggle={toggleQuestion}
                   handleAddQuestion={handleAddQuestion}
+                  handleDeleteQuestion={handleDeleteQuestion}
                   mode={mode}
                 />
-              ))}
-            {questions.length === 0 && (
+              ))
+            ) : (
               <tr>
                 <td colSpan={9} className="text-center p-4 text-gray-500">
                   No questions found.

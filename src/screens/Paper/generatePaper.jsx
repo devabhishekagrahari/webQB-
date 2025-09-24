@@ -1,10 +1,12 @@
+import { useEffect } from "react";
 import { usePaperData } from "../../context/appProvider";
 import PaperSummary from "./components/paperSummary";
 import { QuestionList } from "./components/QuestionList/QuestionList";
 
-export default function GeneratePaper(){
+export default function GeneratePaper() {
   const paperData = usePaperData();
-  return (     
+
+  return (
     <div className="flex flex-row w-full overflow-y-auto gap-4">
       <div className="flex-1 max-w-[45%]">
         <PaperSummary {...paperData} />

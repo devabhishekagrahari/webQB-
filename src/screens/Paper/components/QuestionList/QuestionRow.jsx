@@ -20,6 +20,7 @@ export function QuestionRow({
   isOpen,
   toggle,
   handleAddQuestion,
+  handleDeleteQuestion,
   mode = "full",
 }) {
   const difficulty = q.difficulty || "Medium";
@@ -64,7 +65,13 @@ export function QuestionRow({
             onClick={() => handleAddQuestion(q)}
             className="mt-4 inline-flex items-center text-teal-600 font-semibold hover:text-teal-700 transition-colors"
           >
-            <span className="p-3 self-center">➕</span>
+            <span className="p-3 self-center">Add</span>
+          </button>
+          <button
+            onClick={() => handleDeleteQuestion(q._id)}
+            className="mt-4 inline-flex items-center text-teal-600 font-semibold hover:text-teal-700 transition-colors"
+          >
+            <span className="p-3 self-center">Delete</span>
           </button>
         </td>
 
@@ -80,7 +87,12 @@ export function QuestionRow({
               <button className="p-1 hover:text-green-600 hover:scale-110 transition">
                 <Pencil size={16} />
               </button>
-              <button className="p-1 hover:text-red-600 hover:scale-110 transition">
+              <button
+                onClick={() => {
+                  handleDeleteQuestion(q._id);
+                }}
+                className="p-1 hover:text-red-600 hover:scale-110 transition"
+              >
                 <Trash2 size={16} />
               </button>
             </td>

@@ -18,7 +18,7 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
     chapter: "",
     subChapter: "",
     subSubChapter: "",
-    typeOfQuestion: "MCQ",
+    typeOfQuestion: "",
   });
 
   const handleChange = (e) => {
@@ -42,6 +42,7 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
     chapters: [],
     subChapters: [],
     subSubChapters: [],
+    typeOfQuestion:[],
   });
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
     const chapterSet = new Set();
     const subChapterSet = new Set();
     const subSubChapterSet = new Set();
+    const typeOfQuestion =new Set();
 
     allQuestions.forEach((q) => {
       if (formData.unit && q.unit === formData.unit) chapterSet.add(q.chapter);
@@ -91,6 +93,7 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
         subChapterSet.add(q.subChapter);
       if (formData.subChapter && q.subChapter === formData.subChapter)
         subSubChapterSet.add(q.subSubChapter);
+      if (q.type) typeSet.add(q.type);
     });
 
     setDropdowns((prev) => ({
@@ -98,6 +101,7 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
       chapters: Array.from(chapterSet),
       subChapters: Array.from(subChapterSet),
       subSubChapters: Array.from(subSubChapterSet),
+      typeOfQuestion: Array.from(typeOfQuestion),
     }));
   }, [formData.unit, formData.chapter, formData.subChapter]);
 
@@ -164,7 +168,6 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
 
       const result = await response.json();
       console.log("✅ Question added to backend:", result);
-
       // 4️⃣ Update state
       // setQuestions(prev => [...prev, result.questions]);
       alert("✅ Question added successfully.");
@@ -428,7 +431,7 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
             </div>
 
             {/* Type of Question */}
-            <div>
+            {/* <div>
               <label className="text-sm font-medium text-gray-700">
                 Type of Question
               </label>
@@ -436,13 +439,52 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
                 name="typeOfQuestion"
                 value={formData.typeOfQuestion}
                 onChange={handleChange}
-                className="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-gray-50 
+                className="w-1/2 mt-1 p-2 border border-gray-300 rounded-lg bg-gray-50 
                          focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
               >
                 <option value="MCQ">MCQ</option>
                 <option value="Short Answer">Short Answer</option>
                 <option value="True/False">True/False</option>
               </select>
+              <input
+                type="text"
+                name="typeOfQuestion"
+                placeholder="Or enter type-of-question"
+                value={formData.typeOfQuestion}
+                onChange={handleChange}
+                className="w-1/2 p-2 border border-gray-300 rounded-lg bg-gray-50 
+                           focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
+              />
+            </div> */}
+                        <div>
+              <label className="text-sm font-medium text-gray-700">
+                Type of Question
+              </label>
+              <div className="flex gap-2 mt-1">
+                <select
+                  name="typeOfQuestion"
+                  value={formData.typeOfQuestion}
+                  onChange={handleChange}
+                  className="w-1/2 p-2 border border-gray-300 rounded-lg bg-gray-50 
+                           focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
+                >
+                  <option value="">Select type-Of-Question</option>
+                  {dropdowns.typeOfQuestion.map((ss) => (
+                    <option key={ss} value={ss}>
+                      {ss}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  name="typeOfQuestion"
+                  placeholder="Or enter type-of-questions"
+                  value={formData.typeOfQuestion}
+                  onChange={handleChange}
+                  className="w-1/2 p-2 border border-gray-300 rounded-lg bg-gray-50 
+                           focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
+                />
+              </div>
             </div>
 
             {/* Submit Button */}

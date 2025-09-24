@@ -18,7 +18,7 @@ const handleSubmit = async (e) => {
     });
 
     const data = await res.json();
-
+    console.log("token",data.token)
     if (!res.ok) {
       throw new Error(data.message || "Login failed");
     }
