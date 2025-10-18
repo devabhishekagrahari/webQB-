@@ -15,9 +15,9 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
     posMarks: 1,
     negMarks: 0,
     unit: "",
-    chapter: "",
-    subChapter: "",
-    subSubChapter: "",
+    chapter: [""],
+    subChapter: [""],
+    subSubChapter: [""],
     typeOfQuestion: "",
   });
 
@@ -35,15 +35,61 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
   const addOption = () => {
     setFormData((f) => ({ ...f, options: [...f.options, ""] }));
   };
-
   const [allQuestions, setAllQuestions] = useState([]);
+  const [unitSchemes, setUnitSchemes] = useState([]);
   const [dropdowns, setDropdowns] = useState({
     units: [],
     chapters: [],
     subChapters: [],
     subSubChapters: [],
-    typeOfQuestion:[],
+    typeOfQuestion: [],
   });
+ console.log("dropdown" ,dropdowns);
+  const updateUnitScheme = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log("update Unit button Clicked");
+      // Convert formData into the correct payload shape
+      const toArray = (val) => (val ? (Array.isArray(val) ? val : [val]) : []);
+
+      const payload = {
+        // group: "Computer Engineering", // you can replace or make it dynami
+        units: [
+          {
+            name: formData.unit,
+            chapters: toArray(formData.chapter).map((ch) => ({
+              name: ch,
+              subChapters: toArray(formData.subChapter).map((subCh) => ({
+                name: subCh,
+                subSubChapters: toArray(formData.subSubChapter).map(
+                  (subSub) => ({
+                    name: subSub,
+                  })
+                ),
+              })),
+            })),
+          },
+        ],
+      };
+
+      const res = await fetch(`${BASE_URL}/updateUnitScheme`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok)
+        throw new Error(`Failed to update unit schemes: ${res.status}`);
+
+      const data = await res.json();
+      console.log("✅ Scheme updated successfully:", data);
+    } catch (err) {
+      console.error("❌ Error updating unit scheme:", err.message);
+    }
+  };
 
   useEffect(() => {
     const fetchAllQuestions = async () => {
@@ -78,14 +124,47 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
       }
     };
 
+    const getUnitSchemes = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found. User might not be logged in.");
+          return;
+        }
+        const res = await fetch(`${BASE_URL}/getUnitSchemes`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok)
+          throw new Error(`Failed to fetch unit schemes: ${res.status}`);
+        const data = await res.json();
+        console.log("✅ Unit Schemes fetched:", data);
+
+        const allUnits = [];
+        data.chapterSchemes?.forEach((scheme) => {
+          scheme.units?.forEach((unit) => {
+            allUnits.push(unit.name);
+          });
+        });
+        setUnitSchemes(data.chapterSchemes || []);
+        // merge units with any from questions
+        setDropdowns((prev) => ({
+          ...prev,
+          units: Array.from(new Set([...(prev.units || []), ...allUnits])),
+        }));
+      } catch (e) {
+        console.error("Error fetching unit schemes:", e);
+      }
+    };
+
     fetchAllQuestions();
+    getUnitSchemes();
   }, []);
 
   useEffect(() => {
     const chapterSet = new Set();
     const subChapterSet = new Set();
     const subSubChapterSet = new Set();
-    const typeOfQuestion =new Set();
+    const typeOfQuestion = new Set();
     allQuestions.forEach((q) => {
       if (formData.unit && q.unit === formData.unit) chapterSet.add(q.chapter);
       if (formData.chapter && q.chapter === formData.chapter)
@@ -93,6 +172,25 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
       if (formData.subChapter && q.subChapter === formData.subChapter)
         subSubChapterSet.add(q.subSubChapter);
       if (q.type) typeOfQuestion.add(q.type);
+    });
+        unitSchemes?.forEach((scheme) => {
+      scheme.units?.forEach((unit) => {
+        if (unit.name === formData.unit) {
+          unit.chapters?.forEach((ch) => {
+            chapterSet.add(ch.name);
+            if (formData.chapter === ch.name) {
+              ch.subChapters?.forEach((sub) => {
+                subChapterSet.add(sub.name);
+                if (formData.subChapter === sub.name) {
+                  sub.subSubChapters?.forEach((s) =>
+                    subSubChapterSet.add(s.name)
+                  );
+                }
+              });
+            }
+          });
+        }
+      });
     });
 
     setDropdowns((prev) => ({
@@ -455,7 +553,7 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
                            focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
               />
             </div> */}
-                        <div>
+            <div>
               <label className="text-sm font-medium text-gray-700">
                 Type of Question
               </label>
@@ -485,7 +583,12 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
                 />
               </div>
             </div>
-
+            <button
+              onClick={() => updateUnitScheme()}
+              className="!bg-teal-600 text-white px-4 py-2 rounded p-2 w-fit"
+            >
+              Save Schema
+            </button>
             {/* Submit Button */}
             <button
               type="submit"
