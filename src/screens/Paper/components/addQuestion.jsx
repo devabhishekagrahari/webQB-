@@ -86,14 +86,13 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
     const subChapterSet = new Set();
     const subSubChapterSet = new Set();
     const typeOfQuestion =new Set();
-
     allQuestions.forEach((q) => {
       if (formData.unit && q.unit === formData.unit) chapterSet.add(q.chapter);
       if (formData.chapter && q.chapter === formData.chapter)
         subChapterSet.add(q.subChapter);
       if (formData.subChapter && q.subChapter === formData.subChapter)
         subSubChapterSet.add(q.subSubChapter);
-      if (q.type) typeSet.add(q.type);
+      if (q.type) typeOfQuestion.add(q.type);
     });
 
     setDropdowns((prev) => ({
