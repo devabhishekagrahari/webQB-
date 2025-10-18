@@ -86,6 +86,7 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
 
       const data = await res.json();
       console.log("✅ Scheme updated successfully:", data);
+      console.alert("✅ Scheme updated successfully");
     } catch (err) {
       console.error("❌ Error updating unit scheme:", err.message);
     }
