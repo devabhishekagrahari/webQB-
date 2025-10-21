@@ -1,12 +1,12 @@
 // src/components/AddQuestionForm.jsx
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { usePaperData } from "../../../context/appProvider";
 import BASE_URL from "../../../utils/api";
 
 export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
   const { questions, setQuestions } = usePaperData();
-
+  const [changed, setChanged] = useState(false);
   const [formData, setFormData] = useState({
     question: "",
     options: [""],
@@ -37,6 +37,8 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
   };
   const [allQuestions, setAllQuestions] = useState([]);
   const [unitSchemes, setUnitSchemes] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [lock, setlock] = useState(false);
   const [dropdowns, setDropdowns] = useState({
     units: [],
     chapters: [],
@@ -44,8 +46,9 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
     subSubChapters: [],
     typeOfQuestion: [],
   });
- console.log("dropdown" ,dropdowns);
+  console.log("dropdown", dropdowns);
   const updateUnitScheme = async () => {
+    setSaving(true);
     try {
       const token = localStorage.getItem("token");
       console.log("update Unit button Clicked");
@@ -85,81 +88,90 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
         throw new Error(`Failed to update unit schemes: ${res.status}`);
 
       const data = await res.json();
+      setFormData({
+        question: "",
+        options: [""],
+        imageUrl: "",
+        answer: "",
+        posMarks: 1,
+        negMarks: 0,
+        unit: "",
+        chapter: [""],
+        subChapter: [""],
+        subSubChapter: [""],
+        typeOfQuestion: "",
+      });
+      setChanged(true);
       console.log("✅ Scheme updated successfully:", data);
-      console.alert("✅ Scheme updated successfully");
+      alert("✅ Scheme updated successfully");
     } catch (err) {
       console.error("❌ Error updating unit scheme:", err.message);
+      alert(
+        `❌ Error updating unit scheme: ${err.message}. Please Fill Complete Schema!!`
+      );
     }
+    setSaving(false);
   };
-
   useEffect(() => {
-    const fetchAllQuestions = async () => {
+    const loadInitialData = async () => {
+      setlock(true);
       try {
         const token = localStorage.getItem("token");
-        console.log("🔑 Token:", token);
-        if (!token) {
-          console.error("No token found. User might not be logged in.");
+        if (!token) throw new Error("User not authenticated");
+
+        // Fetch questions and unit schemes in parallel
+        const [questionsRes, schemesRes] = await Promise.all([
+          fetch(`${BASE_URL}/questions`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${BASE_URL}/getUnitSchemes`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        if (!questionsRes.ok)
+          throw new Error(`Failed to fetch questions: ${questionsRes.status}`);
+        if (!schemesRes.ok)
+          throw new Error(`Failed to fetch unit schemes: ${schemesRes.status}`);
+
+        const [questionsData, schemesData] = await Promise.all([
+          questionsRes.json(),
+          schemesRes.json(),
+        ]);
+
+        if (!Array.isArray(questionsData)) {
+          console.warn("Unexpected questions response:", questionsData);
           return;
         }
 
-        const res = await fetch(`${BASE_URL}/questions`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        setAllQuestions(questionsData);
+        setUnitSchemes(schemesData.chapterSchemes || []);
 
-        if (!res.ok)
-          throw new Error(`Failed to fetch questions: ${res.status}`);
+        // Extract unit names from both sources and merge
+        const questionUnits = questionsData.map((q) => q.unit).filter(Boolean);
+        const schemeUnits =
+          schemesData.chapterSchemes?.flatMap(
+            (scheme) => scheme.units?.map((u) => u.name) || []
+          ) || [];
 
-        const data = await res.json();
-        if (!Array.isArray(data)) {
-          console.error("Expected array, got:", data);
-          return;
-        }
+        const mergedUnits = Array.from(
+          new Set([...questionUnits, ...schemeUnits])
+        );
 
-        setAllQuestions(data);
         setDropdowns((prev) => ({
           ...prev,
-          units: [...new Set(data.map((q) => q.unit))],
+          units: mergedUnits,
         }));
       } catch (err) {
-        console.error("Error fetching questions:", err);
+        console.error("❌ Error loading initial data:", err);
+      } finally {
+        setlock(false);
       }
+      setChanged(false);
     };
 
-    const getUnitSchemes = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("No token found. User might not be logged in.");
-          return;
-        }
-        const res = await fetch(`${BASE_URL}/getUnitSchemes`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok)
-          throw new Error(`Failed to fetch unit schemes: ${res.status}`);
-        const data = await res.json();
-        console.log("✅ Unit Schemes fetched:", data);
-
-        const allUnits = [];
-        data.chapterSchemes?.forEach((scheme) => {
-          scheme.units?.forEach((unit) => {
-            allUnits.push(unit.name);
-          });
-        });
-        setUnitSchemes(data.chapterSchemes || []);
-        // merge units with any from questions
-        setDropdowns((prev) => ({
-          ...prev,
-          units: Array.from(new Set([...(prev.units || []), ...allUnits])),
-        }));
-      } catch (e) {
-        console.error("Error fetching unit schemes:", e);
-      }
-    };
-
-    fetchAllQuestions();
-    getUnitSchemes();
-  }, []);
+    loadInitialData();
+  }, [changed]);
 
   useEffect(() => {
     const chapterSet = new Set();
@@ -174,7 +186,7 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
         subSubChapterSet.add(q.subSubChapter);
       if (q.type) typeOfQuestion.add(q.type);
     });
-        unitSchemes?.forEach((scheme) => {
+    unitSchemes?.forEach((scheme) => {
       scheme.units?.forEach((unit) => {
         if (unit.name === formData.unit) {
           unit.chapters?.forEach((ch) => {
@@ -586,9 +598,10 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
             </div>
             <button
               onClick={() => updateUnitScheme()}
+              disabled={saving}
               className="!bg-teal-600 text-white px-4 py-2 rounded p-2 w-fit"
             >
-              Save Schema
+              {saving ? "Saving...." : "Save Schema"}
             </button>
             {/* Submit Button */}
             <button
