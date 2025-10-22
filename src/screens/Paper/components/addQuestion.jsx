@@ -74,7 +74,7 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
           },
         ],
       };
-
+      console.log("payload",JSON.stringify(payload));
       const res = await fetch(`${BASE_URL}/updateUnitScheme`, {
         method: "PUT",
         headers: {
