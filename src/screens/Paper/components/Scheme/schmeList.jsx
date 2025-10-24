@@ -186,6 +186,7 @@ const SchemeList = () => {
 
   return (
     <div className="p-6 w-full flex flex-col rounded-2xl bg-white shadow-md">
+      <div className="text-xl font-bold text-gray-800 pb-4 gap-2">Master Schema Edit/Update/Delete</div>
       <CustomDropdown
         options={allUnits}
         value={selectedUnitId}
