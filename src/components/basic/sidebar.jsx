@@ -60,6 +60,13 @@ export default function Sidebar({ isOpen }) {
           <LayoutDashboard size={20} className="text-teal-400" />
           {isOpen && <span className="text-zinc-800">Dashboard</span>}
         </Link>
+        <Link
+          to="/scheme-list"
+          className="flex items-center space-x-2 bg-white rounded-xl p-3 hover:bg-teal-50"
+        >
+          <LayoutDashboard size={20} className="text-teal-400" />
+          {isOpen && <span className="text-zinc-800">Scheme List</span>}
+        </Link>
       </nav>
 
       {/* Bottom nav */}

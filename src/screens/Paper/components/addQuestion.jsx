@@ -1,11 +1,10 @@
 // src/components/AddQuestionForm.jsx
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { usePaperData } from "../../../context/appProvider";
 import BASE_URL from "../../../utils/api";
 
+
 export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
-  const { questions, setQuestions } = usePaperData();
   const [changed, setChanged] = useState(false);
   const [formData, setFormData] = useState({
     question: "",
@@ -38,7 +37,6 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
   const [allQuestions, setAllQuestions] = useState([]);
   const [unitSchemes, setUnitSchemes] = useState([]);
   const [saving, setSaving] = useState(false);
-  const [lock, setlock] = useState(false);
   const [dropdowns, setDropdowns] = useState({
     units: [],
     chapters: [],
@@ -114,7 +112,7 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
   };
   useEffect(() => {
     const loadInitialData = async () => {
-      setlock(true);
+
       try {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("User not authenticated");
@@ -164,8 +162,6 @@ export default function AddQuestionForm({ createdBy = "admin@example.com" }) {
         }));
       } catch (err) {
         console.error("❌ Error loading initial data:", err);
-      } finally {
-        setlock(false);
       }
       setChanged(false);
     };
