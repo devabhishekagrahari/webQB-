@@ -90,7 +90,7 @@ export default function CustomDropdown({
                         size={16}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setEditingId(0);
+                          setEditingId(opt._id);
                           onEdit(type, opt._id, newName);
                         }}
                       />

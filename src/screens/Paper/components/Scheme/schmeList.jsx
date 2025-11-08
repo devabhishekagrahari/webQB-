@@ -193,6 +193,7 @@ const SchemeList = () => {
         onChange={setSelectedUnitId}
         type={"unitId"}
         onDelete={onDelete}
+        onEdit={onEdit}
       />
       <CustomDropdown
         options={chapters}
